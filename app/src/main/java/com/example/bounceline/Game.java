@@ -1,6 +1,7 @@
 package com.example.bounceline;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import androidx.core.content.ContextCompat;
@@ -13,6 +14,7 @@ import android.view.SurfaceView;
  * Game manages all objects  in a game and is responsible for updating all states and render all
  */
 class Game extends SurfaceView implements SurfaceHolder.Callback {
+    private final Paddle paddle;
     private final Ball ball;
     private GameLoop gameLoop;
 
@@ -26,7 +28,10 @@ class Game extends SurfaceView implements SurfaceHolder.Callback {
         gameLoop = new GameLoop(this, surfaceHolder);
 
         // Initialize ball
-        ball = new Ball(getContext(), 500, 500, 75);
+        ball = new Ball(getContext(), 540, 400, 3, 0, 75, 10);
+
+        // Initialize paddle
+        paddle = new Paddle(getContext(),400, 600, 680, 600);
 
         setFocusable(true);
     }
@@ -37,10 +42,10 @@ class Game extends SurfaceView implements SurfaceHolder.Callback {
         // Handle touch event actions
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                ball.setPosition((double) event.getX(), (double) event.getY());
+                paddle.beginNewPosition((double) event.getX(), (double) event.getY());
                 return true;
             case MotionEvent.ACTION_MOVE:
-                ball.setPosition((double) event.getX(), (double) event.getY());
+                paddle.changeNewPosition((double) event.getX(), (double) event.getY());
                 return true;
         }
 
@@ -67,7 +72,10 @@ class Game extends SurfaceView implements SurfaceHolder.Callback {
         super.draw(canvas);
         drawUPS(canvas);
         drawFPS(canvas);
+        ball.drawBallPosition(canvas, getContext());
+        paddle.drawPointsPosition(canvas, getContext());
 
+        paddle.draw(canvas);
         ball.draw(canvas);
     }
 
@@ -77,7 +85,7 @@ class Game extends SurfaceView implements SurfaceHolder.Callback {
         int color = ContextCompat.getColor(getContext(), R.color.magenta);
         paint.setColor(color);
         paint.setTextSize(50);
-        canvas.drawText("UPS: " + averageUPS, 100, 150, paint);
+        canvas.drawText("UPS: " + averageUPS, 100, 100, paint);
     }
 
     public void drawFPS(Canvas canvas) {
@@ -86,11 +94,12 @@ class Game extends SurfaceView implements SurfaceHolder.Callback {
         int color = ContextCompat.getColor(getContext(), R.color.magenta);
         paint.setColor(color);
         paint.setTextSize(50);
-        canvas.drawText("FPS: " + averageFPS, 100, 300, paint);
+        canvas.drawText("FPS: " + averageFPS, 100, 200, paint);
     }
 
     public void update() {
         // Update game state
+        paddle.update();
         ball.update();
     }
 }

@@ -3,5 +3,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="magenta">#FF0090</color>
+    <color name="cyan">#00FFE0</color>
     <color name="ball">#B070FF</color>
+    <color name="paddle">#00A0BB</color>
 </resources>
