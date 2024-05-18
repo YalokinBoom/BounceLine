@@ -15,9 +15,9 @@ public class Walls {
 
     public Walls(Context context, int topMargin, int bottomMargin, int leftMargin, int rightMargin) {
         this.topMargin = topMargin;
-        this.bottomMargin = bottomMargin;
+        this.bottomMargin = Resources.getSystem().getDisplayMetrics().heightPixels - bottomMargin;
         this.leftMargin = leftMargin;
-        this.rightMargin = rightMargin;
+        this.rightMargin = Resources.getSystem().getDisplayMetrics().widthPixels - rightMargin;
 
         paint = new Paint();
         int color = ContextCompat.getColor(context, R.color.white);
@@ -27,8 +27,6 @@ public class Walls {
     }
 
     public void draw(Canvas canvas) {
-        int height = Resources.getSystem().getDisplayMetrics().heightPixels;
-        int width = Resources.getSystem().getDisplayMetrics().widthPixels;
-        canvas.drawRoundRect((float) leftMargin, (float) topMargin, (float) (width-rightMargin), (float) (height-bottomMargin), 50, 50, paint);
+        canvas.drawRoundRect((float) leftMargin, (float) topMargin, (float) (rightMargin), (float) (bottomMargin), 50, 50, paint);
     }
 }

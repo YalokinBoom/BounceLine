@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.Log;
+
 import androidx.core.content.ContextCompat;
 
 public class Ball {
@@ -12,14 +14,15 @@ public class Ball {
     private double velocityX;
     private double velocityY;
     private double gravityX;
-    private double gravityY = 0.3;
+    private double gravityY = 1000;
     private double radius;
     private double mass;
     private Paint paint;
     private Walls walls;
     private String collided;
-    private int height = Resources.getSystem().getDisplayMetrics().heightPixels;
-    private int width = Resources.getSystem().getDisplayMetrics().widthPixels;
+    private String gravitated;
+    private double previousTime;
+    private double nextTime = ((double) System.currentTimeMillis()) / 1000;
 
     public Ball(Context context, Walls walls, double positionX, double positionY, double velocityX, double velocityY, double radius, double mass) {
         this.walls = walls;
@@ -49,45 +52,61 @@ public class Ball {
         paint.setColor(color);
         paint.setTextSize(40);
         int height = Resources.getSystem().getDisplayMetrics().heightPixels;
-        canvas.drawText("Ball Position: " + ballPosition, 100, height - 200, paint);
-        canvas.drawText("Ball Velocity: " + ballVelocity + ", Collided: " + collided, 100, height - 150, paint);
+        canvas.drawText("Ball Position: " + ballPosition, 100, height - 230, paint);
+        canvas.drawText("Ball Velocity: " + ballVelocity + ", Collided: " + collided, 100, height - 180, paint);
+        canvas.drawText("Gravity: " + gravitated, 100, height - 130, paint);
     }
 
     public void update() {
-        velocity();
-        gravity();
-        wallsCollision();
+        previousTime = nextTime;
+        nextTime = ((double) System.currentTimeMillis()) / 1000;
+
+        collided = checkWallsCollision();
+
+        if (collided == "NO") {
+            updatePosition();
+            updateGravity();
+        } else {
+            wallsCollision();
+        }
     }
 
-    private void velocity() {
-        positionX += velocityX;
-        positionY += velocityY;
+    private void updatePosition() {
+        positionY += velocityY * (nextTime - previousTime);
     }
 
-    private void gravity() {
-        velocityX += gravityX;
-        velocityY += gravityY;
+    private void updateGravity() {
+        velocityY += gravityY * (nextTime - previousTime);
+        gravitated = String.format("%08.5f", (gravityY * (nextTime - previousTime))) + ", Delta-Time: " + String.format("%04.3f", nextTime - previousTime) + " s";
+    }
+
+    private String checkWallsCollision() {
+        double nextPositionY = positionY + ((velocityY + gravityY * (nextTime - previousTime)) * (nextTime - previousTime));
+
+        if ((nextPositionY - radius) < walls.topMargin) { // Top collision
+            return "TOP";
+        } else if ((nextPositionY + radius) > walls.bottomMargin) { // Bottom collision
+            return "BOTTOM";
+        } else {
+            return "NO";
+        }
     }
 
     private void wallsCollision() {
-        if ((positionY-radius) < walls.topMargin) { // Top collision
-            velocityY *= -1;
-            velocity();
-            collided = "TOP";
-        } else if ((positionY+radius) > (height-walls.bottomMargin)) { // Bottom collision
-            velocityY *= -1;
-            velocity();
-            collided = "BOTTOM";
-        } else if ((positionX-radius) < walls.leftMargin) { // Left collision
-            velocityX *= -1;
-            velocity();
-            collided = "LEFT";
-        } else if ((positionX+radius) > (width-walls.rightMargin)) { // Right collision
-            velocityX *= -1;
-            velocity();
-            collided = "RIGHT";
-        } else {
-            collided = "NO";
+        if (collided == "TOP") { // Top collision
+            double collisionVelocityY = - Math.sqrt(   (2 * gravityY * (walls.topMargin - positionY + radius)) + Math.pow(velocityY, 2)  );
+            double dTime = (nextTime - previousTime) - (   (collisionVelocityY - velocityY) / gravityY   );
+
+            velocityY = gravityY * dTime - collisionVelocityY;
+            positionY += (walls.topMargin - positionY + radius) - (   (dTime * (velocityY + collisionVelocityY)) / 2   );
+
+        } else if (collided == "BOTTOM") { // Bottom collision
+            double collisionVelocityY = Math.sqrt(   (2 * gravityY * (walls.bottomMargin - positionY - radius)) + Math.pow(velocityY, 2)  );
+            double dTime = (nextTime - previousTime) - (   (collisionVelocityY - velocityY) / gravityY   );
+
+            velocityY = gravityY * dTime - collisionVelocityY;
+            positionY += (walls.bottomMargin - positionY - radius) - (   (dTime * (velocityY + collisionVelocityY)) / 2   );
+
         }
     }
 }

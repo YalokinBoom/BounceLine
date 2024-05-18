@@ -32,7 +32,7 @@ class Game extends SurfaceView implements SurfaceHolder.Callback {
         walls = new Walls(getContext(), 250, 275, 50, 50);
 
         // Initialize ball
-        ball = new Ball(getContext(), walls, 540, 500, 12, 0, 75, 10);
+        ball = new Ball(getContext(), walls, 540, 500, 0, 1000, 75, 10);
 
         // Initialize paddle
         paddle = new Paddle(getContext(),400, 600, 680, 600);
