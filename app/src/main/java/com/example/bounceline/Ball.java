@@ -13,7 +13,7 @@ public class Ball {
     public double positionY;
     private double velocityX;
     private double velocityY;
-    private double gravityX;
+    private double gravityX = 0.00001;
     private double gravityY = 1000;
     private double radius;
     private double mass;
@@ -54,7 +54,6 @@ public class Ball {
         int height = Resources.getSystem().getDisplayMetrics().heightPixels;
         canvas.drawText("Ball Position: " + ballPosition, 100, height - 230, paint);
         canvas.drawText("Ball Velocity: " + ballVelocity + ", Collided: " + collided, 100, height - 180, paint);
-        canvas.drawText("Gravity: " + gravitated, 100, height - 130, paint);
     }
 
     public void update() {
@@ -64,20 +63,15 @@ public class Ball {
         collided = checkWallsCollision();
 
         if (collided == "NO") {
-            updatePosition();
-            updateGravity();
+            gravity();
         } else {
             wallsCollision();
         }
     }
 
-    private void updatePosition() {
-        positionY += velocityY * (nextTime - previousTime);
-    }
-
-    private void updateGravity() {
+    private void gravity() {
+        positionY += (1/2) * gravityY * Math.pow((nextTime - previousTime), 2) + velocityY * (nextTime - previousTime);
         velocityY += gravityY * (nextTime - previousTime);
-        gravitated = String.format("%08.5f", (gravityY * (nextTime - previousTime))) + ", Delta-Time: " + String.format("%04.3f", nextTime - previousTime) + " s";
     }
 
     private String checkWallsCollision() {
